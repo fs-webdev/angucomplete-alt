@@ -17,7 +17,6 @@ To view a majority of the documentation, go to [ghiden's angucomplete-alt repo](
 | pause | The time to wait (in milliseconds) before searching when the user enters new characters. [example](https://ghiden.github.io/angucomplete-alt/#example1) | No | @ | 400 |
 | selected-object | Either an object in your scope or callback function. If you set an object, it will be passed to the directive with '=' sign but it is actually one-way-bound data. So, setting it from your scope has no effect on input string. If you set a callback, it gets called when selection is made. To get attributes of the input from which the assignment was made, use this.$parent.$index within your function. [example](https://ghiden.github.io/angucomplete-alt/#example1) | Yes | = | selectedObject or objectSelectedCallback |
 | custom-model | Passes in a custom model to ngModel |  Yes | = | myObject |
-
 | selected-object-data | A second parameter which will be passed to selected-object.  Only works when using selected-object. | No | = | row |
 | remote-url | The remote URL to hit to query for results in JSON. angucomplete will automatically append the search string on the end of this, so it must be a GET request. [example](https://ghiden.github.io/angucomplete-alt/#example5) | No | @ | http://myserver.com/api/users/find?searchstr= |
 | remote-url-data-field | The name of the field in the JSON object returned back that holds the Array of objects to be used for the autocomplete list. [example](https://ghiden.github.io/angucomplete-alt/#example5) | No | @ | results |
