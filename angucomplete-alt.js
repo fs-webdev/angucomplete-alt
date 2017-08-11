@@ -46,7 +46,7 @@
     // Set the default template for this directive
     $templateCache.put(TEMPLATE_URL,
         '<div class="angucomplete-holder" ng-class="{\'angucomplete-dropdown-visible\': showDropdown}">' +
-        '  <input id="{{id}}_value" name="{{inputName}}" tabindex="{{fieldTabindex}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="searchStr" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(searchStr)"/>' +
+        '  <input id="{{id}}_value" name="{{inputName}}" tabindex="{{fieldTabindex}}" ng-class="{\'angucomplete-input-not-empty\': notEmpty}" ng-model="customModel" ng-disabled="disableInput" type="{{inputType}}" placeholder="{{placeholder}}" maxlength="{{maxlength}}" ng-focus="onFocusHandler()" class="{{inputClass}}" ng-focus="resetHideResults()" ng-blur="hideResults($event)" autocapitalize="off" autocorrect="off" autocomplete="off" ng-change="inputChangeHandler(customModel)"/>' +
         '  <div id="{{id}}_dropdown" class="angucomplete-dropdown" ng-show="showDropdown">' +
         '    <div class="angucomplete-searching" ng-show="searching" ng-bind="textSearching"></div>' +
         '    <div class="angucomplete-searching" ng-show="!searching && (!results || results.length == 0)" ng-bind="textNoResults"></div>' +
@@ -120,7 +120,7 @@
 
       scope.$on('angucomplete-alt:clearInput', function (event, elementId) {
         if (!elementId || elementId === scope.id) {
-          scope.searchStr = null;
+          scope.customModel = null;
           callOrAssign();
           handleRequired(false);
           clearResults();
@@ -136,10 +136,10 @@
       function handleInputChange(newval, initial) {
         if (newval) {
           if (typeof newval === 'object') {
-            scope.searchStr = extractTitle(newval);
+            scope.customModel = extractTitle(newval);
             callOrAssign({originalObject: newval});
           } else if (typeof newval === 'string' && newval.length > 0) {
-            scope.searchStr = newval;
+            scope.customModel = newval;
           } else {
             if (console && console.error) {
               console.error('Tried to set ' + (!!initial ? 'initial' : '') + ' value of angucomplete to', newval, 'which is an invalid value');
@@ -188,7 +188,7 @@
         callOrAssign({originalObject: str});
 
         if (scope.clearSelected) {
-          scope.searchStr = null;
+          scope.customModel = null;
         }
         clearResults();
       }
@@ -237,7 +237,7 @@
 
       function handleRequired(valid) {
         scope.notEmpty = valid;
-        validState = scope.searchStr;
+        validState = scope.customModel;
         if (scope.fieldRequired && ctrl && scope.inputName) {
           ctrl[scope.inputName].$setValidity(requiredClassName, valid);
         }
@@ -255,26 +255,26 @@
         }
         else if (which === KEY_DW) {
           event.preventDefault();
-          if (!scope.showDropdown && scope.searchStr && scope.searchStr.length >= minlength) {
+          if (!scope.showDropdown && scope.customModel && scope.customModel.length >= minlength) {
             initResults();
             scope.searching = true;
-            searchTimerComplete(scope.searchStr);
+            searchTimerComplete(scope.customModel);
           }
         }
         else if (which === KEY_ES) {
           clearResults();
           scope.$apply(function() {
-            inputField.val(scope.searchStr);
+            inputField.val(scope.customModel);
           });
         }
         else {
-          if (minlength === 0 && !scope.searchStr) {
+          if (minlength === 0 && !scope.customModel) {
             return;
           }
 
-          if (!scope.searchStr || scope.searchStr === '') {
+          if (!scope.customModel || scope.customModel === '') {
             scope.showDropdown = false;
-          } else if (scope.searchStr.length >= minlength) {
+          } else if (scope.customModel.length >= minlength) {
             initResults();
 
             if (searchTimer) {
@@ -284,11 +284,11 @@
             scope.searching = true;
 
             searchTimer = $timeout(function() {
-              searchTimerComplete(scope.searchStr);
+              searchTimerComplete(scope.customModel);
             }, scope.pause);
           }
 
-          if (validState && validState !== scope.searchStr && !scope.clearSelected) {
+          if (validState && validState !== scope.customModel && !scope.clearSelected) {
             scope.$apply(function() {
               callOrAssign();
             });
@@ -298,7 +298,7 @@
 
       function handleOverrideSuggestions(event) {
         if (scope.overrideSuggestions &&
-            !(scope.selectedObject && scope.selectedObject.originalObject === scope.searchStr)) {
+            !(scope.selectedObject && scope.selectedObject.originalObject === scope.customModel)) {
           if (event) {
             event.preventDefault();
           }
@@ -308,7 +308,7 @@
           // cancel http request
           cancelHttpRequest();
 
-          setInputString(scope.searchStr);
+          setInputString(scope.customModel);
         }
       }
 
@@ -394,7 +394,7 @@
           else if (scope.currentIndex === 0) {
             scope.$apply(function() {
               scope.currentIndex = -1;
-              inputField.val(scope.searchStr);
+              inputField.val(scope.customModel);
             });
           }
         } else if (which === KEY_TAB) {
@@ -416,7 +416,7 @@
             // no results
             // intentionally not sending event so that it does not
             // prevent default tab behavior
-            if (scope.searchStr && scope.searchStr.length > 0) {
+            if (scope.customModel && scope.customModel.length > 0) {
               handleOverrideSuggestions();
             }
           }
@@ -613,7 +613,7 @@
 
         if (scope.autoMatch && scope.results.length === 1 &&
             checkExactMatch(scope.results[0],
-              {title: text, desc: description || ''}, scope.searchStr)) {
+              {title: text, desc: description || ''}, scope.customModel)) {
           scope.showDropdown = false;
         } else if (scope.results.length === 0 && !displayNoResults) {
           scope.showDropdown = false;
@@ -641,7 +641,7 @@
         if (scope.focusIn) {
           scope.focusIn();
         }
-        if (minlength === 0 && (!scope.searchStr || scope.searchStr.length === 0)) {
+        if (minlength === 0 && (!scope.customModel || scope.customModel.length === 0)) {
           scope.currentIndex = scope.focusFirst ? 0 : scope.currentIndex;
           scope.showDropdown = true;
           showAll();
@@ -658,8 +658,8 @@
           hideTimer = $timeout(function() {
             clearResults();
             scope.$apply(function() {
-              if (scope.searchStr && scope.searchStr.length > 0) {
-                inputField.val(scope.searchStr);
+              if (scope.customModel && scope.customModel.length > 0) {
+                inputField.val(scope.customModel);
               }
             });
           }, BLUR_TIMEOUT);
@@ -670,7 +670,7 @@
           }
 
           if (scope.overrideSuggestions) {
-            if (scope.searchStr && scope.searchStr.length > 0 && scope.currentIndex === -1) {
+            if (scope.customModel && scope.customModel.length > 0 && scope.currentIndex === -1) {
               handleOverrideSuggestions();
             }
           }
@@ -695,10 +695,10 @@
         }
 
         if (scope.clearSelected) {
-          scope.searchStr = null;
+          scope.customModel = null;
         }
         else {
-          scope.searchStr = result.title;
+          scope.customModel = result.title;
         }
         callOrAssign(result);
         clearResults();
@@ -821,7 +821,8 @@
         fieldTabindex: '@',
         inputName: '@',
         focusFirst: '@',
-        parseInput: '&'
+        parseInput: '&',
+        customModel: '='
       },
       templateUrl: function(element, attrs) {
         return attrs.templateUrl || TEMPLATE_URL;
